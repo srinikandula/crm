@@ -1049,10 +1049,10 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
 			}else if($fromTimestamp<$limitTimestamp && $toTimestamp>=$limitTimestamp){
 					//EventData && EventDataTemp
 
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventData WHERE " . $str . "  imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventData WHERE " . $str . " imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
 					$rows1 = Yii::app()->db_gts->createCommand($query)->queryAll();
 					
-					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE " . $str . "  imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
+					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE " . $str . " imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
 					$rows2 = Yii::app()->db_gts->createCommand($query1)->queryAll();
 					$rows= array_merge($rows1,$rows2);
 
