@@ -1,0 +1,38 @@
+<?php if(sizeof($model['cah'])){?>
+<div class="row-fluid">
+    <div class="tab-pane active" id="Personal Details">
+        <div class="span6">
+            <fieldset class="portlet " >
+                <div class="portlet-decoration arrow-minus" onclick=" $('#hide_box_line5').slideToggle();">
+                    <div class="span11">Access History</div>
+                    <div class="span1 Dev-arrow"><button class="btn btn-info arrow_main" type="button"></button> </div>
+                    <div class="clearfix"></div>	
+                </div>
+                <div class="portlet-content" id="hide_box_line5">
+                    <div id="for_scroll">
+                        <table class="table" border='0'>
+                            <thead>
+                                <tr>
+                                    <th>Admin</th>
+                                    <th>Message</th>
+                                    <th>Date Created</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grand_total">
+                                <?php foreach ($model['cah'] as $clsh) { ?>
+                                    <tr>
+                                        <td><?php echo $clsh['admin']; ?></td>
+                                        <td><?php echo $clsh['message']; ?></td>
+                                        <td><?php echo $clsh['date_created']; ?></td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table> 
+                    </div>
+            </fieldset>
+        </div> 
+    </div>
+</div>
+<?php }?>

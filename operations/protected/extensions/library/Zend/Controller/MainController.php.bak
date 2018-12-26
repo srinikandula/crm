@@ -1,0 +1,15 @@
+<?php
+/**
+ * Handling Errors in the application
+ *
+ * @category   Zend
+ * @package    ErrorController
+ * @author     suresh babu k
+ */
+class Zend_Controller_MainController extends Zend_Controller_Front {
+	public function init()
+	{
+		
+	}
+ }
+

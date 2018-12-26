@@ -1,0 +1,96 @@
+<div class="row-fluid">
+        <div class="tab-pane active" id="Personal Details"><div class="span6">
+                <fieldset class="portlet " style="width:104%">
+        <div class="portlet-decoration arrow-minus" onclick=" $('#hide_box_line7').slideToggle();">
+            <div class="span11">Quotes</div>
+            <div class="span1 Dev-arrow"><button class="btn btn-info arrow_main" type="button"></button> </div>
+            <div class="clearfix"></div>	
+        </div>
+        <div style="height:82px;overflow: auto">
+        <div class="portlet-content" id="hide_box_line7">
+            <?php $contactRow=$_SESSION['id_admin_role']==8?'style="display:none"':'';//contact details not visible for transporters
+                  $bookingRow=$_SESSION['id_admin_role']!=8?'style="display:none"':'';//book available only for transporters?>
+            <table class="table uploading-status" border='0' id="table_quotes">
+                <thead>
+                    <tr>
+                        <th>#id</th>
+                        <th <?php echo $contactRow;?>>Contact</th>
+                        <th>Quote</th>
+                        <th>Comment</th>
+                        <th <?php echo $bookingRow;?> >Confirm</th>
+                    </tr>
+                </thead>
+                <tbody >
+                    <?php foreach ($model['ltrq'] as $row): ?>
+                        <tr <?php if($row->booking_request){ echo 'style="border:3px solid green;color:green;font-weight:bold"'; }?>>
+                            <td><?php echo $row->idprefix; ?></td>
+                            <td <?php echo $contactRow;?>><?php echo $row->fullname.",".$row->mobile; ?></td>
+                            <td><?php echo $row->quote; ?></td>
+                            <td><?php echo $row->message; ?></td>
+                            <td <?php echo $bookingRow;?>>
+                                <?php if($row->booking_request){?>
+                                <button id="request_booking" disabled="true" name="request_booking" type="button"  class="btn btn-info" >Processing</button><?php }else{?><button id="request_booking"  name="request_booking" type="button"  class="btn btn-primary" onclick="fnBookRequest(<?php echo $row->id_load_truck_request_quotes;?>);">Request Booking</button>
+                                
+                                <?php }?>
+                            
+                            </td>
+                        </tr>
+                    <?php endforeach;?>
+                    
+                </tbody>
+                <tfoot>
+                </tfoot>
+            </table> 
+        </div>
+        </div>
+        <?php if($_SESSION['id_admin_role']!=8){?>
+        <div class="portlet-content" id="hide_box_line3">
+            <table style="width:120%">
+                <tr colspan="4"  style="padding-bottom:0px;line-height: 0px">
+                    <th>Customer Id</th>
+                    <th>Quote</th>
+                    <th>Comment</th>
+                </tr>
+                <tr>
+                    <td valign="top"><input type="text" name="Loadtruckrequestquote[idprefix]"></td>
+                    <td valign="top"><input type="text" name="Loadtruckrequestquote[quote]"></td>
+                    <td><textarea name="Loadtruckrequestquote[comment]" rows="2" cols="90"></textarea></td>
+                    <td><?php
+                        echo CHtml::ajaxButton("Submit", $this->createUrl('load/Addquote', array('id' => (int) $_GET['id'])), array('dataType' => 'text', 'type' => 'post', 'success' => 'function(data){
+	res=data.split("---");
+	if(res[0]==1){
+	//alert("in if"+res[1]);	
+            $("#table_quotes thead").after(res[1]);
+	}else{
+            alert("Invalid data.try again!!");
+		//$("#amount_recived").html(res[1]);
+	}
+
+	//$("#uploadBox").dialog("open");
+}', /* ,'update' => '#amount_recived' */), array('confirm' => 'Are you sure??'));
+                        ?></td>
+                </tr>
+            </table>
+        </div><?php }?>
+    </fieldset>
+</div>
+            </div>
+    </div>
+<script>
+    function fnBookRequest(rid) {
+	$.ajax({
+		url: '<?php echo $this->createUrl("load/bookrequest")?>',
+		type: 'post',
+		data: 'id=' + rid,
+		dataType: 'json',
+		success: function(json) {
+			if (json['status']) {
+				$('#notification').html('<div class="alert in fade alert-success" id="success">Thank You,Will process your request in few mins!!<a style="cursor:pointer" class="close" data-dismiss="alert">×</a></div>');
+				$('#success').fadeIn('slow').delay(2000).fadeOut(2000);
+			}	
+		}
+	});
+}
+
+</script>    
+

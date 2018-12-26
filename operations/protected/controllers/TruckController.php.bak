@@ -1,0 +1,260 @@
+<?php
+
+class TruckController extends Controller {
+
+    public function accessRules()
+    {
+        return $this->addActions(array('AutocompleteTruck','Approve'));
+    }
+    
+    public function actionApprove() {
+        $ids = Yii::app()->request->getParam('id');
+        //echo '<pre>';print_r($ids);exit;
+		
+        $approved = 0;
+        foreach ($ids as $id) {
+            $row = Truck::model()->find('id_truck=' . $id);
+            if (!$row->approved) {
+                $approved = 1;
+                $row->approved = 1;
+                $row->save(false);
+                $custObj=Customer::model()->find('id_customer='.$row->id_customer);
+                if($custObj->enable_sms_email_ads)
+                {    
+                    $data = array('id' => '3', 'replace' => array('%truck_reg_no%' => $row->truck_reg_no), 'mail' => array("to" => array($custObj->email => $custObj->fullname)));
+                    Mail::send($data);
+                }
+                
+            }
+        }
+
+        if ($approved) {
+            Yii::app()->user->setFlash('success', 'Selected Truck approved successfully!!');
+        }
+        $this->redirect('index');
+    }
+    
+    public function actionCreate() {
+        $model['t'] = new Truck;
+        $model['f'] = new Truckdoc;
+        $model['c'] = new Customer;
+        
+        if (Yii::app()->request->isPostRequest) {
+            $model['t']->attributes = $_POST['Truck'];
+            if($_POST['Truck']['id_customer']){
+                $xCust=explode(",",$_POST['Truck']['id_customer']); 
+                $custObj=Customer::model()->find('fullname like "'.$xCust[0].'" and mobile="'.$xCust[2].'"');
+                if($custObj->id_customer){
+                    $model['t']->id_customer=$custObj->id_customer;
+                }
+            }
+            
+            if ($model['t']->validate()){
+                $model['t']->save();
+                
+                $this->setUploadMultipleImages(array('id' => $model['t']->id_truck, 'multiImage' => $_FILES['TruckDoc'],
+                    'imageData' => $_POST['TruckDoc']['upload']));
+            if($custObj->enable_sms_email_ads)
+            {    
+                $data = array('id' => '10', 'replace' => array('%truck_reg_no%' => $_POST['Truck']['truck_reg_no']), 'mail' => array("to" => array($custObj->email => $custObj->fullname)));
+                Mail::send($data);
+            }
+            Yii::app()->user->setFlash('success', Yii::t('common', 'message_create_success'));
+            $this->redirect('index');
+            }
+        }
+        $records['customer']=  Customer::model()->findAll('approved=1');
+        $this->render('create', array('records'=>$records,'model' => $model));
+    }
+
+    public function actionUpdate($id) {
+        $model = $this->loadModel($id);
+        if (isset($_POST['Truck'])) {
+            
+            $model['t']->attributes = $_POST['Truck'];
+//echo '<pre>';print_r($model['t']->attributes);print_r($_POST);exit;
+            
+            $data = $_FILES['fitness_certificate'];
+            $data['input']['prefix'] = 'fitness_certificate_' . $id . '_';
+            $data['input']['path'] = Library::getTruckUploadPath();
+            $data['input']['prev_file'] = $_POST['prev_fitness_certificate'];
+            $upload = Library::fileUpload($data);
+            //echo '<pre>';print_r($upload);exit;
+            $model['t']->fitness_certificate = $upload['file'];
+
+			$data = $_FILES['driver_driving_licence'];
+            $data['input']['prefix'] = 'driver_driving_licence_' . $id . '_';
+            $data['input']['path'] = Library::getTruckUploadPath();
+            $data['input']['prev_file'] = $_POST['prev_driver_driving_licence'];
+            $upload = Library::fileUpload($data);
+            $model['t']->driver_driving_licence = $upload['file'];
+
+			$data = $_FILES['vehicle_insurance'];
+            $data['input']['prefix'] = 'vehicle_insurance_' . $id . '_';
+            $data['input']['path'] = Library::getTruckUploadPath();
+            $data['input']['prev_file'] = $_POST['prev_vehicle_insurance'];
+            $upload = Library::fileUpload($data);
+            $model['t']->vehicle_insurance = $upload['file'];
+			
+			$data = $_FILES['vechicle_rc'];
+            $data['input']['prefix'] = 'vechicle_rc_' . $id . '_';
+            $data['input']['path'] = Library::getTruckUploadPath();
+            $data['input']['prev_file'] = $_POST['prev_vechicle_rc'];
+            $upload = Library::fileUpload($data);
+            $model['t']->vechicle_rc = $upload['file'];
+            $this->setUploadMultipleImages(array('id' => $_GET['id'], 'multiImage' => $_FILES['TruckDoc'],
+                    'imageData' => $_POST['TruckDoc']['upload']));
+            if ($model['t']->validate()){
+                $model['t']->save();
+                Yii::app()->user->setFlash('success', Yii::t('common', 'message_modify_success'));
+                $this->redirect(base64_decode(Yii::app()->request->getParam('backurl')));
+            }
+        }
+        //$truck=Truckrouteprice::model()->findAll('id_truck='.$id);
+        //$file = Truckdoc::model()->findAll('id_truck=' . $id);
+        //$this->render('update', array('model' => $model, 'truck' => $truck,'file'=>$file));
+		
+        $this->render('update', array('model' => $model));
+    }
+    
+    public function setUploadMultipleImages($data) {
+        //echo '<pre>';
+        //print_r($_FILES);
+        //print_r($_POST);
+        //print_r($data);
+        //exit;
+        $fUploadImage = "";
+        if($data['id']){
+        Truckdoc::model()->deleteAll('id_truck=' . $data['id']);
+        }
+        foreach ($data['multiImage']['name']['upload'] as $k => $v) {
+            if ($data['multiImage']['name']['upload'][$k]['image'] == "" && $data['imageData'][$k]['prev_image'] == "") {
+                continue;
+            }
+
+            $fUploadImage = array("name" => $data['multiImage']['name']['upload'][$k]['image'],
+                "type" => $data['multiImage']['type']['upload'][$k]['image'],
+                "tmp_name" => $data['multiImage']['tmp_name']['upload'][$k]['image'],
+                "error" => $data['multiImage']['error']['upload'][$k]['image'],
+                "size" => $data['multiImage']['size']['upload'][$k]['image'],);
+
+            $fUploadImage['input']['prefix'] = 'truck_'. '-' . $data['id'] . '_' . $k . '_';
+            $fUploadImage['input']['path'] = Library::getTruckUploadPath();
+            $fUploadImage['input']['prev_file'] = $data['imageData'][$k]['prev_image'];
+
+            $uploadImage = Library::fileUpload($fUploadImage);
+            //echo "file ".$uploadImage['file']."<br/>";
+            $model = new Truckdoc;
+            $model->id_truck = $data['id'];
+            $model->file = $uploadImage['file'];
+            $model->save(false);
+        }
+    //    print_r($images);
+    }
+
+    public function actionDelete() {//($id)
+        $arrayRowId = is_array(Yii::app()->request->getParam('id')) ? Yii::app()->request->getParam('id') : array(Yii::app()->request->getParam('id'));
+        if (sizeof($arrayRowId) > 0) {
+            $arrayRowId = $this->findRelated($arrayRowId);
+
+            $criteria = new CDbCriteria;
+            $criteria->addInCondition('id_country', $arrayRowId);
+
+            if (CActiveRecord::model('Country')->deleteAll($criteria)) {
+                Yii::app()->user->setFlash('success', Yii::t('common', 'message_delete_success'));
+            } else {
+                Yii::app()->user->setFlash('error', Yii::t('common', 'message_delete_fail'));
+            }
+        } else {
+            Yii::app()->user->setFlash('alert', Yii::t('common', 'message_checkboxValidation_alert'));
+            Yii::app()->user->setFlash('error', Yii::t('common', 'message_delete_fail'));
+        }
+
+        if (!isset($_GET['ajax']))
+            $this->redirect(base64_decode(Yii::app()->request->getParam('backurl')));
+    }
+/*
+    public function findRelated($input) {
+        $criteria = new CDbCriteria;
+        $criteria->condition = 't.id_country IN ( ' . implode(",", $input) . ' )';
+        $states = State::model()->findAll($criteria);
+        if (sizeof($states) > 0) {
+            $items = "";
+            $input = array_flip($input);
+            foreach ($states as $state):
+                $items.=$prefix . strip_tags($state->name);
+                $prefix = ",";
+                unset($input[$state->id_country]);
+            endforeach;
+            $input = array_flip($input);
+
+            Yii::app()->user->setFlash('alert', Yii::t('countries', 'warning_country', array('{details}' => $items)));
+        }
+        return $input;
+    }
+*/
+    public function actionIndex() {
+        //echo Yii::app()->user->id;
+        //echo '<pre>';print_r($_SESSION);EXIT;
+        $model = new Truck('search');
+        $model->unsetAttributes();  // clear any default values
+        if (isset($_GET['Truck']))
+            $model->attributes = $_GET['Truck'];
+
+        $this->render('index', array('model' => $model));
+    }
+
+    public function loadModel($id) {
+        $model['t'] = Truck::model()->findByPk($id);
+        $model['f'] = Truckdoc::model()->findAll('id_truck=' . $id);
+        $model['c'] = Customer::model()->find('id_customer=' . $model['t']->id_customer);
+        if ($model === null)
+            throw new CHttpException(404, 'The requested page does not exist.');
+        return $model;
+    }
+
+    protected function performAjaxValidation($model) {
+        if (isset($_POST['ajax']) && $_POST['ajax'] === 'country-form') {
+            echo CActiveForm::validate($model);
+            Yii::app()->end();
+        }
+    }
+    
+    protected function grid($data, $row, $dataColumn) {
+        switch ($dataColumn->name) {
+            case 'truck_reg_no':
+                $return = '<a href="'.$this->createUrl('truckrouteprice/index',array('tid'=>$data->id_truck)).'" target="_blank" >'.$data->truck_reg_no.'</a>';
+                break;
+			case 'fullname':
+			
+				if($data->type=='L'){
+					$page="loadowner";
+				}else if($data->type=='T'){
+					$page="truckowner";
+				}if($data->type=='G'){
+					$page="guest";
+				}if($data->type=='C'){
+					$page="cagent";
+				}
+
+                $return = '<a href="'.$this->createUrl($page.'/update',array('id'=>$data->id_customer)).'" target="_blank" >'.$data->fullname.'</a>';
+                break;
+        }
+        return $return;
+    }
+    
+    public function actionAutocompleteTruck() {
+	//exit($_GET['term']);
+        $res =array();
+        $str="";
+	if (isset($_GET['term'])) {
+            $qtxt ="SELECT truck_reg_no FROM {{truck}} WHERE approved=1 and booked=0 and status=1 and truck_reg_no  LIKE :truck_reg_no";
+            $command =Yii::app()->db->createCommand($qtxt);
+            $command->bindValue(":truck_reg_no", '%'.$_GET['term'].'%', PDO::PARAM_STR);
+            $res =$command->queryColumn();
+	}
+
+	echo CJSON::encode($res);
+	Yii::app()->end();
+    }
+}

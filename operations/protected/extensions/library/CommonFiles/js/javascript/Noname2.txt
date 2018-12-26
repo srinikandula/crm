@@ -1,0 +1,13 @@
+1.upload 
+ common.js
+2.uploaded modified template files
+3.
+
+ update security and common.js,logo width height
+
+
+modifications for logo and loading image
+1.templates modified moved
+2.common.js backup common_june_5_2013.js
+3.$this->view->lSize=explode("*",IMAGE_LOGO_SIZE); in main.php after Model_Template::getTemplateText();
+

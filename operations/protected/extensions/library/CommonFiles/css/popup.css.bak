@@ -1,0 +1,139 @@
+/* 
+	author: istockphp.com
+*/
+#backgroundPopup { 
+	z-index:1;
+	position: fixed;
+	display:none;
+	height:100%;
+	width:100%;
+	background:#000000;	
+	top:0px;  
+	left:0px; z-index:99999;
+}
+.muralib{
+border:1px solid green;
+}
+.innerdiv{
+height: 100%;
+    overflow: hidden;
+    position: absolute;
+  right: -69px;
+top: -10px;
+    width: 56px;
+	background: #ccc;
+padding: 10px 5px;
+}
+.innerimg{
+width:50px;
+height:70px;
+}div#popup_content img { background:0px; }div#popup_content img#left, div#popup_content img#right { position:absolute; top:40%; cursor:pointer; } 
+.innerdiv img { border:4px solid #666666; margin-bottom:5px; cursor:pointer; }
+#toPopup {
+font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+    background: none no-repeat scroll 0 0 #FFFFFF;
+    border: 10px solid #ccc;
+    border-radius: 3px 3px 3px 3px;
+    color: #333333;
+    display: none;
+	font-size: 14px;
+    left: 41%;
+    margin-left: -402px;
+    position: fixed;
+    top: 5%;
+    
+    width: 65%;
+    max-width: 951px;
+    height:90%;
+    cursor: all-scroll;
+    z-index: 9999999999999999; /*background-position:  no-repeat;*/
+/*	overflow:hidden;
+	//background:url('../images/popup/test.jpg') 0px 40% no-repeat;*/
+	
+}
+div.loader {
+    background: url("../image/popup/loading.gif") no-repeat scroll 0 0 transparent;
+    height: 32px;
+    width: 32px;
+	display: none;
+	z-index: 9999;
+	top: 40%;
+	left: 50%;
+	position: absolute;
+	margin-left: -10px;
+}
+div.close {
+    background: url("../image/popup/closebox.png") no-repeat scroll 0 0 transparent;
+    bottom: 24px;
+cursor: pointer;
+float: right;
+height: 30px;
+left: 88px;
+position: relative;
+width: 30px;
+z-index: 9999;
+}div#popup_content img#left { float:right; } 
+span.ecs_tooltip {
+    background: none repeat scroll 0 0 #000000;
+    border-radius: 2px 2px 2px 2px;
+    color: #FFFFFF;
+    display: none;
+    font-size: 11px;
+    height: 16px;
+    opacity: 0.7;
+    padding: 4px 3px 2px 5px;
+    position: absolute;
+    right: -62px;
+    text-align: center;
+    top: -51px;
+    width: 93px;
+}
+span.arrow {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid #000000;
+    display: block;
+    height: 1px;
+    left: 40px;
+    position: relative;
+    top: 3px;
+    width: 1px;
+}
+div#popup_content {
+   margin: 0px 4px;
+position: absolute;
+width: 100%; height:100%;
+}
+div#popup_content img#left { left: auto;
+right: 10px; }
+
+
+/* styles unrelated to zoom */
+
+		/*p { position:absolute; top:3px; right:28px; color:#555; font:bold 13px/1 sans-serif;}*/
+
+		/* these styles are for the demo, but are not required for the plugin */
+		.zoom {
+			display:inline-block;
+			position: relative;
+		}
+		
+		/* magnifying glass icon */
+		.zoom:after {
+			content:'';
+			display:block; 
+			width:33px; 
+			height:33px; 
+			position:absolute; 
+			top:0;
+			right:0;
+			background:url(icon.png);
+		}
+
+		.zoom img {
+			display: block;
+		}
+
+		.zoom img::selection { background-color: transparent; }
+
+		

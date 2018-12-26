@@ -1,0 +1,233 @@
+<?php
+
+class Controller extends CController {
+
+    public $defaultAction = 'index';
+    public $layout = '//layouts/column1';
+    public $addPerm = false;
+    public $editPerm = false;
+    public $deletePerm = false;
+	public $listAllPerm = true;
+    public $menuItemsList = array();
+    public $menuTopItemsList = array();
+    public $accessPermissions = array();
+    public $gridPerm = array();
+    public $menu = array();
+    public $breadcrumbs = array();
+	public $menuTitle = array();
+    public function init() {
+			$this->getPermissions();
+	  }
+
+     
+
+    public function getPermissions() {
+		
+        $rows = AdminPermissions::getAdminPermissions((int) Yii::app()->session['id_admin_role'],array('order' => 'module_sort_order asc,file_sort_order asc', 'condition' => 'status=1 and id_admin_role=:id_admin_role', 'params' => array(':id_admin_role' => (int) Yii::app()->session['id_admin_role'])));
+        
+		
+        $menu = array();
+        $file_permissions = array();
+		$menuTitle=array();
+        foreach ($rows as $row) {
+			if(!$row->status){
+				continue;
+			}
+            $file_permissions[$row->file_name] = array("listall" => $row->listall,"view" => $row->view, "add" => $row->add, "edit" => $row->edit, "trash" => $row->trash);
+            //$menu[$row->menu_type][$row->module_name][] = $row->file_name;
+			$class=$row->file_name==$this->uniqueid?"class='menu_select'":"";
+			$menu[$row->menu_type][$row->module_name][$row->file_name] = "<a href='".$this->createUrl($row->file_name."/index")."'  ".$class." >".ucfirst($row->title)."</a>";
+            $menuTitle[$row->file_name]=$row->title;
+			if ($row->file_name == $this->uniqueid):
+                $this->breadcrumbs = array(ucfirst($row->module_name), $menuTitle[$row->file_name]);
+			endif;
+        }
+		$this->menu=$menu;
+		
+		
+		$this->menuTitle=$menuTitle;
+		/*//echo '<pre>';print_r($menu);print_r($menuTitle);exit;
+        //start menu
+        $widjetMenuArray = array();
+        foreach ($menu['0'] as $sectionName => $itemArray):
+            //echo $sectionName."<br/>";
+            unset($widjetMenuArrayItem);
+            $widjetMenuArrayItem['label'] = '<i class="icon-' . $sectionName . '"></i>' . ucfirst($sectionName) . '<span class="caret"></span>';
+            $widjetMenuArrayItem['url'] = '#';
+
+            $widjetMenuArrayItem['linkOptions'] = array('class' => 'dropdown-toggle', 'data-toggle' => 'dropdown');
+            if (sizeof($itemArray) > 0):
+                foreach ($itemArray as $key => $item):
+                    $widjetMenuArrayItem['items'][] = array('label' => '<i class="icon-chevron-right"></i>' . $menuTitle[$item], 'url' => $this->createUrl($item . '/'), 'active' => $item == $this->uniqueid ? 1 : 0);
+                endforeach;
+            endif;
+            $widjetMenuArrayItem['itemOptions'] = array('class' => in_array($this->uniqueid, $itemArray) ? 'dropdown item-test open' : 'dropdown', 'tabindex' => '-1', 'onclick' => 'waitForCheckScroll(this)');
+            $widjetMenuArray[] = $widjetMenuArrayItem;
+            //($active=='1')?'dropdown item-test open':'dropdown'
+        endforeach;
+        //end menu
+
+
+        $this->menuItemsList = $widjetMenuArray;
+
+        //start top menu array
+        $widjetTopMenuArray = array();
+        foreach ($menu['1'] as $sectionName => $itemArray):
+            //echo $sectionName."<br>";
+            unset($widjetMenuArrayItem);
+            $widjetMenuArrayItem['label'] = '<i class="icon-' . $sectionName . '"></i>' . ucfirst($sectionName) . '<span class="caret"></span>';
+            $widjetMenuArrayItem['url'] = '#';
+            $widjetMenuArrayItem['itemOptions'] = array('class' => in_array($this->uniqueid, $itemArray) ? 'dropdown item-test active-top' : 'dropdown', 'tabindex' => '-1');
+            $widjetMenuArrayItem['linkOptions'] = array('class' => 'dropdown-toggle', 'data-toggle' => 'dropdown');
+            if (sizeof($itemArray) > 0):
+                foreach ($itemArray as $key => $item):
+                    $widjetMenuArrayItem['items'][] = array('label' =>  $menuTitle[$item], 'url' => $this->createUrl($item . '/'), 'itemOptions' => $this->uniqueid == $item ? array('class' => 'active-top') : ''); //'index.php?r='.$item);
+                endforeach;
+            endif;
+            $widjetTopMenuArray[] = $widjetMenuArrayItem;
+        endforeach;*/
+        // exit;
+        /*
+		$language = array();
+        //echo '<pre>';
+		$languages=Yii::app()->config->getData('languages');
+        foreach ($languages as $lang) {
+            //print_r($lang);
+            if ($lang['id_language'] == Yii::app()->session['language']) {
+                $language['label'] = ' ' . $lang['code'] . ' <span class="caret"></span>';
+                $language['url'] = '';
+                $language['itemOptions'] = array('class' => 'dropdown', 'tabindex' => "-1");
+                $language['linkOptions'] = array('class' => 'dropdown-toggle', 'data-toggle' => "dropdown");
+            } else {
+
+                $language['items'][] = array('label' => $lang['code'], 'url' => $this->createUrl('index', array('lang' => $lang['code'])));
+            }
+        }*/
+
+        //$this->menuTopItemsList = $widjetTopMenuArray;
+        //end top menu array
+
+        $permissions = array();
+        $actions[] = $file_permissions[$this->uniqueid]['view'] == "Y" ? "index" : "";
+        $actions[] = $file_permissions[$this->uniqueid]['add'] == "Y" ? "create" : "";
+        $actions[] = $file_permissions[$this->uniqueid]['edit'] == "Y" ? "update" : "";
+        $actions[] = $file_permissions[$this->uniqueid]['trash'] == "Y" ? "delete" : "";
+
+        $this->addPerm = $file_permissions[$this->uniqueid]['add'] == "Y" ? true : false;
+        $this->editPerm = $file_permissions[$this->uniqueid]['edit'] == "Y" ? true : false;
+        $this->deletePerm = $file_permissions[$this->uniqueid]['trash'] == "Y" ? true : false;
+		$this->listAllPerm= $file_permissions[$this->uniqueid]['listall'] == "Y" ? true : false;
+        if($this->listAllPerm){
+		exit('in');
+		}else{
+		exit('out');
+		}
+		
+		//start grid permissions
+        $templateString = "";
+        $buttonsArray = array();
+        if ($this->editPerm == true || $file_permissions[$this->uniqueid]['view'] == 'Y') {
+            $templateString.="{update} ";
+        }
+
+        $templateString.=$this->deletePerm == true ? '{delete}' : '';
+
+        if ($this->editPerm == false && $file_permissions[$this->uniqueid]['view'] == 'Y') {
+            $buttonsArray = array('update' => array('label' => 'view'));
+        }
+        $buttonsArray['delete'][url] = "";
+        //$buttonsArray=array("update"=>array("label"=>"view"));
+        $gridPerm = array();
+        $gridPerm['template'] = $templateString;
+        $gridPerm['buttons'] = $buttonsArray;
+        $this->gridPerm = $gridPerm;
+        //end grid permissions
+
+
+        $permissions[] = array('allow', // allow authenticated user to perform 'create' and 'update' actions
+            'actions' => array_filter($actions),
+            'users' => array('@'),
+        );
+        $permissions[] = array('deny', // deny all users
+            'users' => array('*'),
+            'message' => "Sorry! You Dont Have Access Permissions.",
+        );
+			//echo '<pre>';print_r($permissions);echo '</pre>';
+        $this->accessPermissions = $permissions;
+    }
+
+    public function accessRules() {
+        return $this->accessPermissions;
+    }
+
+    public function filters() {
+        return array(
+            'accessControl', // perform access control for CRUD operations
+            'postOnly + delete', // we only allow deletion via POST request
+        );
+    }
+
+    protected function afterAction($action) {
+		
+		
+		//exit('after action');
+        $request = Yii::app()->getRequest();
+        if (!$request->getIsAjaxRequest())
+            Yii::app()->user->setReturnUrl($request->getUrl());
+        return parent::afterAction($action);
+    }
+
+    protected function beforeAction($action) {
+		//start log
+		//exit(Yii::t('common','menu_item_stockstatus'));
+		if('adminloghistory'!=$this->uniqueid){
+		if('menu_item_'!=Yii::t('common','menu_item_'.$this->uniqueid))
+		{
+			$page_accessed=$this->menuTitle[$this->uniqueid];
+		}else
+		{
+			$page_accessed=ucfirst($this->uniqueid);
+		}
+		
+		//exit($page_accessed." ".$_SERVER['REQUEST_METHOD'].$action->id." ".Yii::t('common','menu_item_'.$this->uniqueid));
+		if($action->id=='index')
+		{
+			$actionName="View";
+		}else if($action->id=='create')
+		{
+			$actionName=$_SERVER['REQUEST_METHOD']!='GET'?'Create':'';
+		}else if($action->id=='update')
+		{
+			$actionName=$_SERVER['REQUEST_METHOD']!='GET'?'Update':'';
+		}
+		else if($action->id=='delete')
+		{
+			$actionName="Delete";
+		}
+			if($actionName!="")
+			{
+				$adminLogHistory=new AdminLogHistory;		
+				$adminLogHistory->id_admin=Yii::app()->user->id;
+				$adminLogHistory->page_accessed=$page_accessed;
+				$adminLogHistory->page_url=$this->createUrl();//Yii::app()->getRequest()->getUrl();
+				$adminLogHistory->action=$actionName;
+				$adminLogHistory->ip_address=$_SERVER['REMOTE_ADDR'];
+				$adminLogHistory->save();
+			}
+		}
+		//end log
+
+		//exit("in before action");
+        return parent::beforeAction($action);
+    }
+
+    public function addActions($actions) {
+        if (is_array($actions)) {
+            foreach ($actions as $action) {
+                $return = array_push($this->accessPermissions[0][actions], $action);
+            }
+        }
+        return $this->accessPermissions;
+    }
+
+}

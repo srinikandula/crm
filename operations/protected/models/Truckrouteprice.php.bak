@@ -1,0 +1,201 @@
+<?php
+
+class Truckrouteprice extends CActiveRecord
+{
+	public $title;
+	public $truck_reg_no;
+	public $customer_commission;
+	public $customer_commission_type;
+	public $truck_commission;
+	public $truck_commission_type;
+	public $truck_route_commission;
+	public $truck_route_commission_type;
+	public $tracking_available;
+	public $truck_type;
+
+	public function tableName()
+	{
+		return '{{truck_route_price}}';
+	}
+
+	public function rules()
+	{
+		return array(
+			array('id_truck,source_address,destination_address,date_available,price,id_goods_type,id_load_type,status', 'required'),
+			array('status', 'numerical', 'integerOnly'=>true),
+			array('tracking_available,truck_type,truck_reg_no,title,source_city,source_state,destination_city,destination_state','safe'),
+			array('status','default','value'=>1,'setOnEmpty'=>true,'on'=>'insert'),
+			);
+	}
+
+	public function relations()
+	{
+		return array();
+	}
+	
+    public function attributeLabels()
+	{
+		return array(
+			'id_truck' => 'Truck',
+			'id_source' => 'Source',
+			'id_destination'=>'Destination',
+			'source_city'=>'Source',
+			'destination_city'=>'Destination',
+			'date_available'=>'Date Available',
+			'id_goods_type'=>'Type Of Goods',
+			'id_load_type'=>'Load Type',
+			);
+	}
+
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
+	}
+
+	public function searchPrice()
+	{
+		$criteria=new CDbCriteria;
+		$criteria->select='t.*,tk.truck_reg_no,gt.title';
+		$criteria->compare('concat(source_city," - ",source_state)',$this->source_city,true);
+		$criteria->compare('concat(destination_city," - ",destination_state)',$this->destination_city,true);
+		$criteria->compare('truck_reg_no',$this->truck_reg_no,true);
+		$criteria->compare('date_available',$this->date_available,true);
+		$criteria->compare('title',$this->title,true);
+		$criteria->compare('price',$this->price);
+		$criteria->compare('status',$this->status);
+		$criteria->join="inner join {{truck}} tk on t.id_truck=tk.id_truck inner join {{goods_type}} gt on gt.id_goods_type=t.id_goods_type";
+		
+		if((int)$_GET['tid']){ //if navigated from truck
+			$criteria->condition='t.id_truck="'.$_GET['tid'].'"';
+		}
+
+		if($_SESSION['id_admin_role']==8){ //for transporter
+			$criteria->condition='t.id_customer="'.(int)Yii::app()->user->id.'"';
+		}
+
+		/*$criteria->compare('landline',$this->landline,true);
+		$criteria->compare('city',$this->city,true);
+		$criteria->compare('state',$this->state,true);
+		//$criteria->compare('id_customer_group',$this->id_customer_group);
+		$criteria->compare('approved',$this->approved);
+		*/
+		
+		return new CActiveDataProvider($this, array(
+			'criteria'=>$criteria,
+                'pagination'=>array(
+                        'pageSize' =>Yii::app()->config->getData('CONFIG_WEBSITE_ITEMS_PER_PAGE_ADMIN'),
+                ),
+				'sort' => array(
+					'defaultOrder' => 'id_truck_route_price DESC',
+					),
+		));
+	}
+
+	public function updateCommission(){
+		//update truck route,route,point source and destination as it was made null before.
+		Truckrouteprice::model()->updateAll(array('commission_type'=>'','commission'=>''));
+		$comTruckRouteObj=Commission::model()->findAll('type="PERSON_TRUCK_ROUTE"');
+		foreach($comTruckRouteObj as $comTruckRouteObjRow){
+		$exp=explode(",",$comTruckRouteObjRow->title);
+			$custObj=Yii::app()->db->createCommand('select trp.id_truck_route_price from {{customer}} c,{{truck}} t,{{truck_route_price}} trp where c.id_customer=t.id_customer and t.truck_reg_no="'.$exp[3].'" and c.mobile="'.$exp[2].'" and c.fullname="'.$exp[0].'" and t.id_truck=trp.id_truck  and trp.source_city like "'.$comTruckRouteObjRow->source_city.'" and trp.destination_city like "'.$comTruckRouteObjRow->destination_city.'"')->queryAll();
+			foreach ($custObj as $key => $value) {
+				if($value['id_truck_route_price']==""){                        continue;}
+				Truckrouteprice::model()->updateAll(array('commission_type'=>$comTruckRouteObjRow->commission_type,'commission'=>$comTruckRouteObjRow->commission),'id_truck_route_price="'.$value['id_truck_route_price'].'"');
+			}
+		}
+
+		//exit;
+		
+		//update route
+		$comRouteObj=Commission::model()->findAll('type="ROUTE"');
+		foreach($comRouteObj as $comRouteObjRow){
+			if($comRouteObjRow->source_city!="" && $comRouteObjRow->destination_city!=""){
+				Truckrouteprice::model()->updateAll(array('commission_type'=>$comRouteObjRow->commission_type,'commission'=>$comRouteObjRow->commission),'commission_type="" and commission="" and source_city like "'.$comRouteObjRow->source_city.'" and  destination_city like "'.$comRouteObjRow->destination_city.'"');
+			}
+		}
+		
+		//update point source/destination
+		$comObj=Commission::model()->findAll('type="POINT"');
+		foreach($comObj as $comObjRow){
+			if($comObjRow->source_city!="" && $comObjRow->destination_city==""){
+				Truckrouteprice::model()->updateAll(array('commission_type'=>$comObjRow->commission_type,'commission'=>$comObjRow->commission),'commission_type="" and commission="" and source_city like "'.$comObjRow->source_city.'"');
+			}
+			if($comObjRow->destination_city!="" && $comObjRow->source_city==""){
+				Truckrouteprice::model()->updateAll(array('commission_type'=>$comObjRow->commission_type,'commission'=>$comObjRow->commission),'commission_type="" and commission="" and destination_city like "'.$comObjRow->destination_city.'"');
+			}
+		}
+	}
+
+	public function searchTruckBooking()
+	{
+		/*source_city
+		source_state
+		destination_city
+		destination_state*/
+		//exit("value of ".$this->tracking_available);
+		$criteria=new CDbCriteria;
+		$criteria->select='c.*,c.commission_type as customer_commission_type,c.commission as customer_commission,t.*,tk.*,tk.commission_type as truck_commission_type,tk.commission as truck_commission,tk.truck_reg_no,t.*,t.commission_type as truck_route_commission_type,t.commission as truck_route_commission,gt.title,tt.title as truck_type';
+		//$criteria->compare('concat(source_city," - ",source_state)',$this->source_city,true);
+		//$criteria->compare('concat(destination_city," - ",destination_state)',$this->destination_city,true);
+		$criteria->compare('t.source_address',$this->source_address,true);
+		$criteria->compare('t.destination_address',$this->destination_address,true);
+		if($this->source_address!=""){
+			$expSour=explode(",",$this->source_address);
+			//echo '<pre>';print_r($expSour);
+			//exit;
+			
+			$expSourRev=array_reverse($expSour);
+			$criteria->compare('t.source_city',$expSourRev[2]==""?$expSour[0]:$expSour[2],true,'or');
+			$criteria->compare('t.source_state',$expSourRev[1]==""?$expSour[0]:$expSour[1],true,'or');
+		}
+
+		if($this->destination_address!=""){
+			$expDest=explode(",",$this->destination_address);
+			$expDestRev=array_reverse($expDest);
+			$criteria->compare('t.destination_city',$expDestRev[2],true,'or');
+			$criteria->compare('t.destination_state',$expDestRev[1],true,'or');
+		}
+
+		$criteria->compare('truck_reg_no',$this->truck_reg_no);
+		$criteria->compare('date_available',$this->date_available,true);
+		$criteria->compare('tt.title',$this->truck_type,true);
+		$criteria->compare('gt.title',$this->title,true);
+		if($this->price!=""){
+			$expPrice=explode(",",$this->price);
+			//echo '<pre>';print_r($expPrice);echo '</pre>';
+			if($expPrice[0]!="" && $expPrice[1]==""){
+				//echo "in if<br>";
+				//$criteria->compare('price',$expPrice[0],false,'>');	
+				$criteria->compare('price>',$expPrice[0]);	
+			}else if($expPrice[0]=="" && $expPrice[1]!=""){
+			//echo "in else if<br>";
+				//$criteria->compare('price',$expPrice[1],false,'<');
+				$criteria->compare('price<',$expPrice[1]);
+			}else if($expPrice[0]!="" && $expPrice[0]!=""){
+				//$criteria->compare('price',$expPrice[0],false,'>');
+				//$criteria->compare('price',$expPrice[1],false,'<');
+				$criteria->compare('price>',$expPrice[0]);
+				$criteria->compare('price<',$expPrice[1]);
+			}
+		}
+
+		//exit;
+		//$criteria->compare('price',$this->price);
+		
+		$criteria->compare('tracking_available',$this->tracking_available);
+ 
+		//$criteria->join="inner join {{truck}} tk on t.id_truck=tk.id_truck inner join {{goods_type}} gt on gt.id_goods_type=t.id_goods_type inner join {{customer}} c on tk.id_customer=c.id_customer and c.status=1 and c.approved=1";
+		$criteria->join="inner join {{truck}} tk on t.id_truck=tk.id_truck  inner join {{customer}} c on tk.id_customer=c.id_customer and c.status=1 and c.approved=1 and tk.approved=1 and tk.status=1 and tk.booked=0 and t.route_allowed=1 left join {{goods_type}} gt on gt.id_goods_type=t.id_goods_type left join {{truck_type}} tt on tt.id_truck_type=tk.id_truck_type";
+		//$criteria->condition='tk.approved=1 and tk.status=1 and tk.booked=0 and t.route_allowed=1';
+		 
+		return new CActiveDataProvider($this, array(
+			'criteria'=>$criteria,
+                'pagination'=>array(
+                        'pageSize' =>Yii::app()->config->getData('CONFIG_WEBSITE_ITEMS_PER_PAGE_ADMIN'),
+                ),
+				'sort' => array(
+					'defaultOrder' => 'id_truck_route_price DESC',
+					),
+		));
+	}
+}

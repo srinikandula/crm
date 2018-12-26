@@ -1,0 +1,56 @@
+<?php echo $this->renderPartial('_form_customer', array('form' => $form, 'model' => $model), true);?>
+<div class="tab-pane active" id="Information">
+    <div class="span12">
+        <fieldset class="portlet">
+            <div class="portlet-decoration arrow-minus" onclick=" $('#hide_box_line1').slideToggle();">
+                <div class="span11">
+                    <?php echo 'Franchise Details' ?>
+                </div>
+                <div class="span1 Dev-arrow">
+                    <button class="btn btn-info arrow_main" type="button"></button>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="portlet-content" id="hide_box_line1">
+                
+				<div class="span5"  style="margin-left:2.12766%">
+                    <?php echo $form->textFieldRow($model['c'], 'card_customer_no', array('rel' => 'tooltip', 'data-toggle' => "tooltip", 'data-placement' => "right",));   ?>
+                </div>
+
+				<div class="span5">
+                    <?php echo $form->textFieldRow($model['c'], 'card_username', array('rel' => 'tooltip', 'data-toggle' => "tooltip", 'data-placement' => "right",));   ?>
+                </div>
+
+				<div class="span5">
+                    <?php echo $form->textFieldRow($model['c'], 'card_password', array('rel' => 'tooltip', 'data-toggle' => "tooltip", 'data-placement' => "right",));   ?>
+                </div>
+
+				<div class="span5">
+                    <?php echo $form->textFieldRow($model['c'], 'card_cashback_percent', array('rel' => 'tooltip', 'data-toggle' => "tooltip", 'data-placement' => "right",));   ?>
+                </div>
+				
+				<div class="span5">
+					<?php 
+					$list = CHtml::listData(Franchise::model()->findAll(array('condition'=>'status=1 order by account asc')), 'id_franchise', 'account'); 
+					echo $form->dropDownListRow($model['c'], 'id_franchise', $list,array('prompt'=>'Select Franchise')); ?>
+				</div>
+
+				<div class="span5">
+                    <?php echo $form->textFieldRow($model['c'], 'date_fuel_card_applied', array('class'=>'date','rel' => 'tooltip', 'data-toggle' => "tooltip", 'data-placement' => "right",));   ?>
+                </div>
+
+				<div class="span5">
+					<?php 
+					echo $form->dropDownListRow($model['c'], 'card_status', array('Applied'=>'Applied','Received'=>'Received','Delivered'=>'Delivered','Canceled'=>'Canceled')); ?>
+				</div>
+
+			</div>
+        </fieldset>
+    </div>
+</div>
+<?php 
+if((int)$_GET['id']){
+	echo $this->renderPartial('_form_card', array('form' => $form, 'model' => $model), true);
+}
+?>
+<!-- <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script> -->
