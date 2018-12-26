@@ -14,8 +14,8 @@
       <file leaf-file-name="GPSapiV3Controller.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/operations/protected/controllers/GPSapiV3Controller.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="901">
-              <caret line="1131" column="42" selection-start-line="1131" selection-start-column="42" selection-end-line="1131" selection-end-column="42" />
+            <state relative-caret-position="-1912">
+              <caret line="1036" column="23" selection-start-line="1036" selection-start-column="23" selection-end-line="1036" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -194,7 +194,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4395000" />
+    <option name="totallyTimeSpent" value="5233000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="822" extended-state="6" />
@@ -213,7 +213,7 @@
       <window_info anchor="bottom" id="Terminal" />
       <window_info id="Capture Tool" />
       <window_info id="Designer" />
-      <window_info content_ui="combo" id="Project" order="0" weight="0.25" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25" />
       <window_info anchor="right" id="Database" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="right" id="SciView" />
@@ -275,8 +275,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/operations/protected/controllers/GPSapiV3Controller.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="901">
-          <caret line="1131" column="42" selection-start-line="1131" selection-start-column="42" selection-end-line="1131" selection-end-column="42" />
+        <state relative-caret-position="-1912">
+          <caret line="1036" column="23" selection-start-line="1036" selection-start-column="23" selection-end-line="1036" selection-end-column="23" />
         </state>
       </provider>
     </entry>
