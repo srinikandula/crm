@@ -1062,11 +1062,11 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
 					//echo 'EventDataTemp';
 			}
 
-            echo $query;//exit;
+            //echo $query;//exit;
             $too = strtotime($to);
             $fromm = strtotime($to);
 
-            echo '<pre>';print_r($rows);exit;
+            //echo '<pre>';print_r($rows);exit;
             if ($accountid != "") {
                 $rowAccount = Yii::app()->db_gts->createCommand("select stopDurationLimit,overSpeedLimit from Account where accountID='" . $accountid . "'")->queryRow();
                 $stopDurationLimit = $rowAccount[stopDurationLimit] == 0 ? '300' : $rowAccount[stopDurationLimit] * 60;
