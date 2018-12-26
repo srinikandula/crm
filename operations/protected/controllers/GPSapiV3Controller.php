@@ -1159,10 +1159,10 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
                 $json['success']['runningStatus'] = $running_status;
                 $json['success']['points'] = $points;
             } else {
-                $json['error'][] = array("msg" => "Vehicle not moved between $from to $to");
+                $json['error'][] = array("msg" => "1 Vehicle not moved between $from to $to");
             }
         } else {
-            $json['error'][] = array("msg" => "Vehicle not moved between $from to $to");
+            $json['error'][] = array("msg" => "2 Vehicle not moved between $from to $to");
         }
         echo CJSON::encode($json);
         Yii::app()->end();
