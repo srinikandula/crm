@@ -1042,35 +1042,31 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
 
 			if($fromTimestamp>=$limitTimestamp && $toTimestamp>=$limitTimestamp ){
 				//EventData
-				$query = "SELECT timestamp,ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventData WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
+				$query = "SELECT timestamp,ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventData WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 				$rows = Yii::app()->db_gts->createCommand($query)->queryAll();
-				//echo 'EventData';
-
 			}else if($fromTimestamp<$limitTimestamp && $toTimestamp>=$limitTimestamp){
 					//EventData && EventDataTemp
 
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventData WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventData WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows1 = Yii::app()->db_gts->createCommand($query)->queryAll();
 					
-					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
+					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows2 = Yii::app()->db_gts->createCommand($query1)->queryAll();
 					$rows= array_merge($rows1,$rows2);
 
 					//echo 'EventData && EventDataTemp';
 			}else if($fromTimestamp<=$limitTimestamp && $toTimestamp<=$limitTimestamp){
 					//EventDataTemp
-
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= unix_timestamp('" . $to . "') AND timestamp >=unix_timestamp('" . $from . "')  ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, FROM_UNIXTIME(ifnull(timestamp,0), '%Y %D %M %k:%i') as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows = Yii::app()->db_gts->createCommand($query)->queryAll();
 					//echo 'EventDataTemp';
 			}
 
-            //echo $query;//exit;		
+            echo $query;//exit;
             $too = strtotime($to);
             $fromm = strtotime($to);
 
-            
-            //echo '<pre>';print_r($rows);exit;
+            echo '<pre>';print_r($rows);exit;
             if ($accountid != "") {
                 $rowAccount = Yii::app()->db_gts->createCommand("select stopDurationLimit,overSpeedLimit from Account where accountID='" . $accountid . "'")->queryRow();
                 $stopDurationLimit = $rowAccount[stopDurationLimit] == 0 ? '300' : $rowAccount[stopDurationLimit] * 60;
@@ -1081,7 +1077,6 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
             }
             $max_odokm = 0;
             $distancetravelled = 0;
-            $avgspeed = 0;
             $speedsum = 0;
             $points = array();
             $stops = array();
@@ -1105,12 +1100,10 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
                     $points[$loop]['speedValue'] = ceil($row['speedKPH']);
                     $loop++;
                 } else {
-
                     if ($startStopNew) {
                         $startingStopTime = $row['time_in_secs'];
                         $startStopNew = 0;
                     }
-
                     if ($rows[$i + 1]['speedKPH']) {
                         $stopTime = $rows[$i + 1]['time_in_secs'] - $startingStopTime;
                         if ($stopTime > $stopDurationLimit) {
