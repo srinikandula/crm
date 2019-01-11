@@ -313,7 +313,7 @@ class GpsdevicesController extends Controller {
             $model->installedBy = $exp_installedBy[1];
 			}
             //update devicePaymentStatus
-			//echo '<pre>';print_r($_POST);//exit;
+			echo '<pre>';print_r($_POST);//exit;
             if($model->devicePaymentStatus=="" && ($_POST['GpsDevice']['accountID']!='santosh' && $_POST['GpsDevice']['accountID']!='accounts' )){
 				//exit("in if");
                 $model->devicePaymentStatus="Pending";
