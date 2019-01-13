@@ -206,7 +206,6 @@ class GPSapiV3Controller extends Controller {
         //if (Yii::app()->request->isPostRequest && $userName!="" && $password!="") {
         
         $user = Customer::model()->find('islead=0 and status=1 and (type="L" or type="T" or type="TR" or type="C")  and (mobile="' . $userName . '" or gps_account_id="' . $userName . '")');
-        echo "user $user";
         //truck owners only
         $flag=0;
         if ($user === null) {
