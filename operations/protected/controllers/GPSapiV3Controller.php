@@ -1043,22 +1043,22 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
 
 			if($fromTimestamp>=$limitTimestamp && $toTimestamp>=$limitTimestamp ){
 				//EventData
-				$query = "SELECT timestamp,latitude as latitude, longitude as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+				$query = "SELECT timestamp,latitude as latitude, longitude as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE longitude != 0 AND latitude != 0 AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 				$rows = Yii::app()->db_gts->createCommand($query)->queryAll();
 			}else if($fromTimestamp<$limitTimestamp && $toTimestamp>=$limitTimestamp){
 					//EventData && EventDataTemp
 
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE longitude != 0 AND latitude != 0 AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows1 = Yii::app()->db_gts->createCommand($query)->queryAll();
 					
-					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE longitude != 0 AND latitude != 0 AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows2 = Yii::app()->db_gts->createCommand($query1)->queryAll();
 					$rows= array_merge($rows1,$rows2);
 
 					//echo 'EventData && EventDataTemp';
 			}else if($fromTimestamp<=$limitTimestamp && $toTimestamp<=$limitTimestamp){
 					//EventDataTemp
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE longitude != 0 AND latitude != 0 AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows = Yii::app()->db_gts->createCommand($query)->queryAll();
 					//echo 'EventDataTemp';
 			}
@@ -1091,39 +1091,37 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
             $startStopNew = 1;
             $startingStopTime = 0;
             foreach ($rows as $row) {
-                if($row['longitude'] != "0" && $row['latitude'] != "0" ){
-                    if ($row['speedKPH']) {
-                        $max_odokm = $row['odometerKM'] > $max_odokm ? $row['odometerKM'] : $max_odokm;
-                        $topSpeed = $row['speedKPH'] > $topSpeed ? $row['speedKPH'] : $topSpeed;
-                        $distancetravelled+=$row['distanceKM'];
-                        $speedsum+=$row['speedKPH'];
-                        $points[$loop] = $row;
-                        $points[$loop]['speed'] = ceil($row['speedKPH']) . " Km/Hr";
-                        $points[$loop]['speedValue'] = ceil($row['speedKPH']);
-                        $loop++;
-                    } else {
-                        if ($startStopNew) {
-                            $startingStopTime = $row['time_in_secs'];
-                            $startStopNew = 0;
+                if ($row['speedKPH']) {
+                    $max_odokm = $row['odometerKM'] > $max_odokm ? $row['odometerKM'] : $max_odokm;
+                    $topSpeed = $row['speedKPH'] > $topSpeed ? $row['speedKPH'] : $topSpeed;
+                    $distancetravelled+=$row['distanceKM'];
+                    $speedsum+=$row['speedKPH'];
+                    $points[$loop] = $row;
+                    $points[$loop]['speed'] = ceil($row['speedKPH']) . " Km/Hr";
+                    $points[$loop]['speedValue'] = ceil($row['speedKPH']);
+                    $loop++;
+                } else {
+                    if ($startStopNew) {
+                        $startingStopTime = $row['time_in_secs'];
+                        $startStopNew = 0;
+                    }
+                    if ($rows[$i + 1]['speedKPH']) {
+                        $stopTime = $rows[$i + 1]['time_in_secs'] - $startingStopTime;
+                        if ($stopTime > $stopDurationLimit) {
+                            $stops[$stopLoop] = array("latitude" => $row['latitude'], "longitude" => $row['longitude'], "date_time" => $row['date_time'], "time_in_secs" => $startingStopTime, "stopTime" => $stopTime, "distance" => 0);
+                            $stopLoop++;
                         }
-                        if ($rows[$i + 1]['speedKPH']) {
-                            $stopTime = $rows[$i + 1]['time_in_secs'] - $startingStopTime;
-                            if ($stopTime > $stopDurationLimit) {
-                                $stops[$stopLoop] = array("latitude" => $row['latitude'], "longitude" => $row['longitude'], "date_time" => $row['date_time'], "time_in_secs" => $startingStopTime, "stopTime" => $stopTime, "distance" => 0);
-                                $stopLoop++;
-                            }
-                            $startStopNew = 1;
-                        }
+                        $startStopNew = 1;
                     }
                 }
                 $i++;
             }
 //lastPoint
-            if (is_array($rows[$i - 1])) {
-                $points[$loop] = $rows[$i - 1];
-                $points[$loop]['speed'] = ceil($rows[$i - 1]['speedKPH']) . " Km/Hr";
-                $points[$loop]['speedValue'] = ceil($rows[$i - 1]['speedKPH']);
-            }
+            //if (is_array($rows[$i - 1])) {
+            //    $points[$loop] = $rows[$i - 1];
+            //    $points[$loop]['speed'] = ceil($rows[$i - 1]['speedKPH']) . " Km/Hr";
+            //    $points[$loop]['speedValue'] = ceil($rows[$i - 1]['speedKPH']);
+            //}
 
             $avgspeed = $speedsum / $loop;
             $distancetravelled = ceil($distancetravelled);
