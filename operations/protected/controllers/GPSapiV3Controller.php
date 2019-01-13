@@ -1091,27 +1091,29 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
             $startStopNew = 1;
             $startingStopTime = 0;
             foreach ($rows as $row) {
-                if ($row['speedKPH']) {
-                    $max_odokm = $row['odometerKM'] > $max_odokm ? $row['odometerKM'] : $max_odokm;
-                    $topSpeed = $row['speedKPH'] > $topSpeed ? $row['speedKPH'] : $topSpeed;
-                    $distancetravelled+=$row['distanceKM'];
-                    $speedsum+=$row['speedKPH'];
-                    $points[$loop] = $row;
-                    $points[$loop]['speed'] = ceil($row['speedKPH']) . " Km/Hr";
-                    $points[$loop]['speedValue'] = ceil($row['speedKPH']);
-                    $loop++;
-                } else {
-                    if ($startStopNew) {
-                        $startingStopTime = $row['time_in_secs'];
-                        $startStopNew = 0;
-                    }
-                    if ($rows[$i + 1]['speedKPH']) {
-                        $stopTime = $rows[$i + 1]['time_in_secs'] - $startingStopTime;
-                        if ($stopTime > $stopDurationLimit) {
-                            $stops[$stopLoop] = array("latitude" => $row['latitude'], "longitude" => $row['longitude'], "date_time" => $row['date_time'], "time_in_secs" => $startingStopTime, "stopTime" => $stopTime, "distance" => 0);
-                            $stopLoop++;
+                if($row['longitude'] != "0" && $row['latitude'] != "0" ){
+                    if ($row['speedKPH']) {
+                        $max_odokm = $row['odometerKM'] > $max_odokm ? $row['odometerKM'] : $max_odokm;
+                        $topSpeed = $row['speedKPH'] > $topSpeed ? $row['speedKPH'] : $topSpeed;
+                        $distancetravelled+=$row['distanceKM'];
+                        $speedsum+=$row['speedKPH'];
+                        $points[$loop] = $row;
+                        $points[$loop]['speed'] = ceil($row['speedKPH']) . " Km/Hr";
+                        $points[$loop]['speedValue'] = ceil($row['speedKPH']);
+                        $loop++;
+                    } else {
+                        if ($startStopNew) {
+                            $startingStopTime = $row['time_in_secs'];
+                            $startStopNew = 0;
                         }
-                        $startStopNew = 1;
+                        if ($rows[$i + 1]['speedKPH']) {
+                            $stopTime = $rows[$i + 1]['time_in_secs'] - $startingStopTime;
+                            if ($stopTime > $stopDurationLimit) {
+                                $stops[$stopLoop] = array("latitude" => $row['latitude'], "longitude" => $row['longitude'], "date_time" => $row['date_time'], "time_in_secs" => $startingStopTime, "stopTime" => $stopTime, "distance" => 0);
+                                $stopLoop++;
+                            }
+                            $startStopNew = 1;
+                        }
                     }
                 }
                 $i++;
