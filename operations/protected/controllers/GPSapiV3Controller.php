@@ -206,6 +206,7 @@ class GPSapiV3Controller extends Controller {
         //if (Yii::app()->request->isPostRequest && $userName!="" && $password!="") {
         
         $user = Customer::model()->find('islead=0 and status=1 and (type="L" or type="T" or type="TR" or type="C")  and (mobile="' . $userName . '" or gps_account_id="' . $userName . '")');
+        echo "user $user";
         //truck owners only
         $flag=0;
         if ($user === null) {
@@ -1042,22 +1043,22 @@ vehicleModel,lookingForLoad,lookingForLoadDate from Device where  isActive=1 and
 
 			if($fromTimestamp>=$limitTimestamp && $toTimestamp>=$limitTimestamp ){
 				//EventData
-				$query = "SELECT timestamp,ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+				$query = "SELECT timestamp,latitude as latitude, longitude as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 				$rows = Yii::app()->db_gts->createCommand($query)->queryAll();
 			}else if($fromTimestamp<$limitTimestamp && $toTimestamp>=$limitTimestamp){
 					//EventData && EventDataTemp
 
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventData WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows1 = Yii::app()->db_gts->createCommand($query)->queryAll();
 					
-					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+					$query1 = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows2 = Yii::app()->db_gts->createCommand($query1)->queryAll();
 					$rows= array_merge($rows1,$rows2);
 
 					//echo 'EventData && EventDataTemp';
 			}else if($fromTimestamp<=$limitTimestamp && $toTimestamp<=$limitTimestamp){
 					//EventDataTemp
-					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
+					$query = "SELECT ifnull(latitude,0) as latitude, ifnull(longitude,0) as longitude, speedKPH, (ifnull(timestamp,0)+19800) as time_in_secs, timestamp as date_time,heading,odometerKM,distanceKM FROM EventDataTemp WHERE longitude is NOT NULL AND latitude is NOT NULL AND imeiNumber = " . $imeiNumber . " AND timestamp <= '" . $to . "' AND timestamp >= '" . $from . "' ORDER BY timestamp asc";
 					$rows = Yii::app()->db_gts->createCommand($query)->queryAll();
 					//echo 'EventDataTemp';
 			}
